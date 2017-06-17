@@ -1,8 +1,8 @@
-package com.typesafe.sbt
-package packager
+package com.typesafe.sbt.packager
 
-import sbt._
 import sbt.Keys._
+import sbt._
+import com.typesafe.sbt.packager.Compat._
 
 object SettingsHelper {
 
@@ -17,9 +17,8 @@ object SettingsHelper {
           extension,
           extension,
           classifier = classifier,
-          configurations = Iterable.empty,
-          url = None,
-          extraAttributes = Map.empty
+          configurations = Vector.empty,
+          url = None
         )),
         packageTask
       )
@@ -34,7 +33,8 @@ object SettingsHelper {
         artifacts := Seq.empty,
         packagedArtifacts := Map.empty,
         projectID := ModuleID(organization.value, name.value, version.value),
-        moduleSettings := InlineConfiguration(projectID.value, projectInfo.value, Seq.empty),
+        // TODO find out why we have this InlineConfiguration here
+        moduleSettings := InlineConfiguration(true, ivyScala.value, projectID.value, projectInfo.value, Vector.empty),
         ivyModule := {
           val ivy = ivySbt.value
           new ivy.Module(moduleSettings.value)
@@ -45,7 +45,7 @@ object SettingsHelper {
           ivyFile = None,
           resolverName = Classpaths.getPublishTo(publishTo.value).name,
           artifacts = packagedArtifacts.value,
-          checksums = checksums.value,
+          checksums = checksums.value.toVector,
           logging = UpdateLogging.DownloadOnly,
           overwrite = isSnapshot.value
         ),
@@ -53,7 +53,7 @@ object SettingsHelper {
           ivyFile = None,
           resolverName = "local",
           artifacts = packagedArtifacts.value,
-          checksums = checksums.value,
+          checksums = checksums.value.toVector,
           logging = UpdateLogging.DownloadOnly,
           overwrite = isSnapshot.value
         )
