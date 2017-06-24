@@ -157,21 +157,21 @@ object DockerPlugin extends AutoPlugin {
     * @param maintainer (optional)
     * @return MAINTAINER if defined
     */
-  private final def makeMaintainer(maintainer: String): Option[CmdLike] =
+  private[packager] final def makeMaintainer(maintainer: String): Option[CmdLike] =
     if (maintainer.isEmpty) None else Some(Cmd("MAINTAINER", maintainer))
 
   /**
     * @param dockerBaseImage
     * @return FROM command
     */
-  private final def makeFrom(dockerBaseImage: String): CmdLike =
+  private[packager] final def makeFrom(dockerBaseImage: String): CmdLike =
     Cmd("FROM", dockerBaseImage)
 
   /**
     * @param label
     * @return LABEL command
     */
-  private final def makeLabel(label: Tuple2[String, String]): CmdLike = {
+  private[packager] final def makeLabel(label: Tuple2[String, String]): CmdLike = {
     val (variable, value) = label
     Cmd("LABEL", s"${variable}=${value}")
   }
@@ -179,14 +179,14 @@ object DockerPlugin extends AutoPlugin {
   /**
     * @param dockerBaseDirectory, the installation directory
     */
-  private final def makeWorkdir(dockerBaseDirectory: String): CmdLike =
+  private[packager] final def makeWorkdir(dockerBaseDirectory: String): CmdLike =
     Cmd("WORKDIR", dockerBaseDirectory)
 
   /**
     * @param dockerBaseDirectory, the installation directory
     * @return ADD command adding all files inside the installation directory
     */
-  private final def makeAdd(dockerBaseDirectory: String): CmdLike = {
+  private[packager] final def makeAdd(dockerBaseDirectory: String): CmdLike = {
 
     /**
       * This is the file path of the file in the Docker image, and does not depend on the OS where the image
@@ -202,21 +202,21 @@ object DockerPlugin extends AutoPlugin {
     * @param daemonGroup
     * @return chown command, owning the installation directory with the daemonuser
     */
-  private final def makeChown(daemonUser: String, daemonGroup: String, directories: Seq[String]): CmdLike =
+  private[packager] final def makeChown(daemonUser: String, daemonGroup: String, directories: Seq[String]): CmdLike =
     ExecCmd("RUN", Seq("chown", "-R", s"$daemonUser:$daemonGroup") ++ directories: _*)
 
   /**
     * @param daemonUser
     * @return USER docker command
     */
-  private final def makeUser(daemonUser: String): CmdLike =
+  private[packager] final def makeUser(daemonUser: String): CmdLike =
     Cmd("USER", daemonUser)
 
   /**
     * @param entrypoint
     * @return ENTRYPOINT command
     */
-  private final def makeEntrypoint(entrypoint: Seq[String]): CmdLike =
+  private[packager] final def makeEntrypoint(entrypoint: Seq[String]): CmdLike =
     ExecCmd("ENTRYPOINT", entrypoint: _*)
 
   /**
@@ -224,14 +224,14 @@ object DockerPlugin extends AutoPlugin {
     * @param args
     * @return CMD with args in exec form
     */
-  private final def makeCmd(args: Seq[String]): CmdLike =
+  private[packager] final def makeCmd(args: Seq[String]): CmdLike =
     ExecCmd("CMD", args: _*)
 
   /**
     * @param exposedPorts
     * @return if ports are exposed the EXPOSE command
     */
-  private final def makeExposePorts(exposedPorts: Seq[Int], exposedUdpPorts: Seq[Int]): Option[CmdLike] =
+  private[packager] final def makeExposePorts(exposedPorts: Seq[Int], exposedUdpPorts: Seq[Int]): Option[CmdLike] =
     if (exposedPorts.isEmpty && exposedUdpPorts.isEmpty) None
     else
       Some(
@@ -252,7 +252,7 @@ object DockerPlugin extends AutoPlugin {
     * @see http://stackoverflow.com/questions/23544282/what-is-the-best-way-to-manage-permissions-for-docker-shared-volumes
     * @see https://docs.docker.com/userguide/dockervolumes/
     */
-  private final def makeVolumes(exposedVolumes: Seq[String], daemonUser: String, daemonGroup: String): Seq[CmdLike] =
+  private[packager] final def makeVolumes(exposedVolumes: Seq[String], daemonUser: String, daemonGroup: String): Seq[CmdLike] =
     if (exposedVolumes.isEmpty) Seq.empty
     else
       Seq(
@@ -265,7 +265,7 @@ object DockerPlugin extends AutoPlugin {
     * @param commands representing the Dockerfile
     * @return String representation of the Dockerfile described by commands
     */
-  private final def makeDockerContent(commands: Seq[CmdLike]): String =
+  private[packager] final def makeDockerContent(commands: Seq[CmdLike]): String =
     Dockerfile(commands: _*).makeContent
 
   /**
